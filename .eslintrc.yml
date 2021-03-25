@@ -1,0 +1,11 @@
+env:
+  es2017: true
+  browser: true
+  commonjs: true
+  node: true
+
+extends: ['htmlacademy/es6']
+
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
