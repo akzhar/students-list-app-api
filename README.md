@@ -4,9 +4,26 @@ REST API для клиентской части приложения [students-l
 
 API URL: https://students-list-app-api.herokuapp.com
 
-## Деплой API
+<a id="up"></a>
 
-### Создаем базу данных PostgreSQL
+## Содержание
+- [1. Деплой API](#1)
+	- [1.1 Создаем базу данных PostgreSQL](#1.1)
+	- [1.2 Разворачиваем API на Heroku](#1.2)
+- [2. Команды для работы с API из консоли в локальном репозитории](#2)
+- [3. Тестирование API](#3)
+- [4. Засыпание приложения на Heroku](#4)
+	- [4.1 Проблема](#4.1)
+	- [4.2 Устраняем проблему](#4.2)
+	- [4.3 Проверяем результат](#4.3)
+
+<a id="1"></a>
+
+## <a href="#up">↑</a> 1. Деплой API
+
+<a id="1.1"></a>
+
+### <a href="#up">↑</a> 1.1 Создаем базу данных PostgreSQL
 
 1. Регистрируемся на [elephantsql.com](https://www.elephantsql.com)
 
@@ -104,7 +121,9 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/13.png)
 
-### Разворачиваем API на Heroku
+<a id="1.2"></a>
+
+### <a href="#up">↑</a> 1.2 Разворачиваем API на Heroku
 
 1. Делаем форк данного репозитория и клонируем проект к себе на ПК: `git clone git@github.com:<ваш аккаунт на Github>/students-list-app-api.git`
 
@@ -176,7 +195,9 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/26.png)
 
-## Команды для работы с API из консоли в локальном репозитории
+	<a id="2"></a>
+
+## <a href="#up">↑</a> 2. Команды для работы с API из консоли в локальном репозитории
 
 - `npm run deploy` - быстрый деплой всех изменений в ваш Github репозиторий в ветку `main`, имя коммита `heroku deploy`. Heroku автоматически соберет и запустит новую версию приложения. Если необходимо дать нормальное имя коммиту необходимо заменить команду `npm run deploy` на 3 последовательные команды `git add .`,  `git commit -m "commit name"`,  `git push origin main`.
 PS: все изменения лучше делать в отдельной ветке, тестировать локально (для запуска API локально есть скрипт `npm run dev`) и затем вливать проверенные изменения в ветку `main` таким образом совершая deploy на Heroku.
@@ -187,7 +208,9 @@ PS: все изменения лучше делать в отдельной ве
 
 - `npm run app-on` - запуск приложения на Heroku
 
-## Тестирование API
+<a id="3"></a>
+
+## <a href="#up">↑</a> 3. Тестирование API
  
 Протестировать API можно с помощью [insomnia.rest](https://insomnia.rest/download)
 
@@ -202,3 +225,37 @@ __POST__ /student
 __DELETE__ /student/:id
 
 ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/29.png)
+
+<a id="4"></a>
+
+## <a href="#up">↑</a> 4. Засыпание приложения на Heroku
+
+Есть отличная [статья на javarush.ru](https://javarush.ru/groups/posts/1987-malenjhkie-khitrosti-s-heroku), которая описывает проблему и пути ее решения.
+
+<a id="4.1"></a>
+
+### <a href="#up">↑</a> 4.1 Проблема
+
+1. При регистрации бесплтаного Heroku аккаунта вам дается 550 [free dyno hours](https://devcenter.heroku.com/articles/free-dyno-hours) в месяц. По сути это часы активности вашего приложения.
+
+2. При отсутствии активности на протяжении 30 минут приложение на Heroku будет "засыпать. При первом обращении к нему оно "проснется", но время первого отклика будет сильно дольше обычного.
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/30.png)
+
+<a id="4.2"></a>
+
+### <a href="#up">↑</a> 4.2 Устраняем проблему
+
+1. Чтобы увеличить кол-во `free dyno hours` - в настройках аккаунта на Heroku (`Account settings` → `Billing`) нужно привязать банковскую карту
+
+2. Чтобы победить "засыпание" можно воспользоваться одним из сервисов пинговальщиков, например [Kaffeine](http://kaffeine.herokuapp.com/). Сервис будет пинговать наше приложение раз в 30 минут, не давая ему "спать"
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/31.png)
+
+<a id="4.3"></a>
+
+### <a href="#up">↑</a> 4.3 Проверяем результат
+
+- Открываем логи и убеждаемся, что приложение Kaffeine "разбудило" наше приложение
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/32.png)
