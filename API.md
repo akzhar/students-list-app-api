@@ -89,4 +89,4 @@ __DELETE__ /student/:id
 
 # Github репозиторий клиентской части
 
-[students-list-app](https://github.com/akzhar/students-list-app)
+[students-list-app-client](https://github.com/akzhar/students-list-app-client)
