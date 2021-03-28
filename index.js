@@ -9,7 +9,7 @@ const cors = require(`cors`);
 const pgp = require(`pg-promise`)();
 const multer = require(`multer`);
 const marked = require(`marked`);
-const {getFileExtension, getApiUrl, logAction, logError} = require(path.resolve(__dirname, `utils.js`));
+const {getFileExtension, logAction, logError} = require(path.resolve(__dirname, `utils.js`));
 
 const HOST = process.env.HOST || `localhost`;
 const PORT = process.env.PORT || 3000;
@@ -61,9 +61,8 @@ const apiRun = () => {
   api.post(`/student`, upload.single(`avatar`), (req, res) => {
     const avatar = req.file;
     const student = req.body;
-    const apiAUrl = getApiUrl(req);
     const avatarFileName = (avatar) ? avatar.filename : `default.svg`;
-    const urlToAvatar = `${apiAUrl}/${AVATARS_FOLDER}/${avatarFileName}`;
+    const urlToAvatar = `${API_URL}/${AVATARS_FOLDER}/${avatarFileName}`;
     db.query(`INSERT INTO ${TABLE}
       (name, email, rating, age, avatar, spec, "group", sex, favcolor)
       VALUES ('${student.name}',

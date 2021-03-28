@@ -29,8 +29,6 @@ const log = (message, logFile) => {
   }
 };
 
-const getApiUrl = (req) => `${req.protocol}://${req.get(`host`)}`;
-
 const logAction = (message) => log(message, File.ACTION);
 
 const logError = (error) => {
@@ -38,4 +36,4 @@ const logError = (error) => {
   log(message, File.ERROR);
 };
 
-module.exports = {getTimeStamp, getFileExtension, getApiUrl, logAction, logError};
+module.exports = {getTimeStamp, getFileExtension, logAction, logError};
