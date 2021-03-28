@@ -91,8 +91,7 @@ const apiRun = () => {
       const student = students[0];
       if (student) {
         const avatarUrl = student.avatar;
-        const apiAUrl = getApiUrl(req);
-        const avatarFileName = avatarUrl.slice(apiAUrl.length + 1);
+        const avatarFileName = avatarUrl.slice(API_URL.length + 1);
         res.send(student.id.toString());
         fs.unlink(
             path.resolve(__dirname, `./${AVATARS_FOLDER}/${avatarFileName}`),
