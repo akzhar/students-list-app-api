@@ -9,12 +9,12 @@ const {HttpCode, Path} = require(path.resolve(__dirname, `const.js`));
 // If modifying these scopes, delete token.json
 const SCOPES = [`https://www.googleapis.com/auth/drive`];
 
-// Создает OAuth2 клиента с переданными credentials, после чего выполняет переданный callback с параметрами options
-async function authorize(credentials, callback, options) {
-  // eslint-disable-next-line camelcase
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  // eslint-disable-next-line camelcase
-  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+// Создает OAuth2, используя credentials из process.env, после чего выполняет переданный callback с параметрами options
+async function authorize(callback, options) {
+  const clientId = process.env.GDRIVE_CLIENT_ID;
+  const clientSecret = process.env.GDRIVE_CLIENT_SECRET;
+  const redirectUri = `urn:ietf:wg:oauth:2.0:oob`;
+  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
   let tokens = ``;
   const tokensData = readFile(path.resolve(__dirname, Path.TOKEN), `utf8`);
   if (tokensData) {
@@ -85,16 +85,14 @@ const getGDriveFileUrl = (id) => `https://drive.google.com/uc?export=view&id=${i
 // Авторизует клиента с помощью credentials.json для выполнения ф-ции uploadFile с параметами options
 // Возвращает ссылку на сохраненный в Google Drive файл
 async function uploadAvatar(options) {
-  const authData = fs.readFileSync(path.resolve(__dirname, Path.CREDENTIALS), `utf8`);
-  const avatarId = await authorize(JSON.parse(authData), uploadFile, options);
+  const avatarId = await authorize(uploadFile, options);
   return getGDriveFileUrl(avatarId);
 }
 
 // Авторизует клиента с помощью credentials.json для выполнения ф-ции deleteFile с параметами options
 // Возвращает true, если файл был удален с Google Drive, false, если нет
 async function removeAvatar(options) {
-  const authData = fs.readFileSync(path.resolve(__dirname, Path.CREDENTIALS), `utf8`);
-  const isRemoved = await authorize(JSON.parse(authData), deleteFile, options);
+  const isRemoved = await authorize(deleteFile, options);
   return isRemoved;
 }
 

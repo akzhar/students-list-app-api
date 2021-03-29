@@ -3,7 +3,6 @@ const VALID_AVATAR_EXTENSIONS = [`png`, `jpg`, `jpeg`];
 const Path = {
   DEFAULT_AVATAR: `./default.svg`,
   MD_API_DESCRIPTION: `./API.md`,
-  CREDENTIALS: `./credentials.json`,
   TOKEN: `./token.json`,
   LOG_ACTION: `./logs/actions.txt`,
   LOG_ERROR: `./logs/errors.txt`
