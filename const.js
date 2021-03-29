@@ -1,9 +1,18 @@
-const AVATARS_FOLDER = `avatars`;
+const ID_PARAM_REGEXP = /(?<=&id=).+$/;
 const VALID_AVATAR_EXTENSIONS = [`png`, `jpg`, `jpeg`];
-const HttpCodes = {
+const Path = {
+  DEFAULT_AVATAR: `./default.svg`,
+  MD_API_DESCRIPTION: `./API.md`,
+  CREDENTIALS: `./credentials.json`,
+  TOKEN: `./token.json`,
+  LOG_ACTION: `./logs/actions.txt`,
+  LOG_ERROR: `./logs/errors.txt`
+};
+const HttpCode = {
   BAD_REQUEST: 400,
   NOT_FOUND: 404,
-  UNAVAILABLE: 503
+  UNAVAILABLE: 503,
+  NO_CONTENT: 204
 };
 
-module.exports = {AVATARS_FOLDER, VALID_AVATAR_EXTENSIONS, HttpCodes};
+module.exports = {ID_PARAM_REGEXP, VALID_AVATAR_EXTENSIONS, Path, HttpCode};

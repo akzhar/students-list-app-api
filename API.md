@@ -29,7 +29,7 @@
 			"email": "nikolay.saharov@yandex.ru",
 			"rating": 34,
 			"age": 19,
-			"avatar": "https://students-list-app-api.herokuapp.com/student-avatar-1616535694240.jpg",
+			"avatar": "https://drive.google.com/uc?export=view&id=1qQpCAKB2AI4Q_3kyb-KhfMLGuJaQ6PBO",
 			"spec": "Прикладная информатика",
 			"group": "ПИ-101",
 			"sex": "Мужской",
@@ -59,7 +59,7 @@ __POST__ /student
 
 	- Status: 200 OK
 
-	- Body: структура `Student`, в поле `avatar` ссылка на файл, сохраненный на сервере
+	- Body: структура `Student`, в поле `avatar` ссылка на файл, сохраненный на Google Drive
 
 ## Удаление студента
 

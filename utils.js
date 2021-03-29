@@ -1,9 +1,7 @@
 const fs = require(`fs`);
 const path = require(`path`);
-const File = {
-  ACTION: path.resolve(__dirname, `./logs/actions.txt`),
-  ERROR: path.resolve(__dirname, `./logs/errors.txt`)
-};
+const {Path} = require(path.resolve(__dirname, `const.js`));
+
 const isProduction = process.env.NODE_ENV === `production`;
 
 const getTimeStamp = () => {
@@ -29,11 +27,19 @@ const log = (message, logFile) => {
   }
 };
 
-const logAction = (message) => log(message, File.ACTION);
+const logAction = (message) => log(message, Path.LOG_ACTION);
 
 const logError = (error) => {
   const message = `Caught exception\nErr msg: ${error.message}\nErr name: ${error.name}\nErr stack: ${error.stack}`;
-  log(message, File.ERROR);
+  log(message, Path.LOG_ERROR);
 };
 
-module.exports = {getTimeStamp, getFileExtension, logAction, logError};
+const readFile = (filename, encoding) => {
+  try {
+    return fs.readFileSync(filename, encoding);
+  } catch (_error) {
+    return null;
+  }
+};
+
+module.exports = {getTimeStamp, getFileExtension, logAction, logError, readFile};
