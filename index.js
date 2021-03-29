@@ -8,7 +8,7 @@ const express = require(`express`);
 const cors = require(`cors`);
 const pgp = require(`pg-promise`)();
 const upload = require(path.resolve(__dirname, `upload.js`));
-const gDrive = require(path.resolve(__dirname, `google-drive.js`));
+const gDriveApi = require(path.resolve(__dirname, `google-drive-api.js`));
 const marked = require(`marked`);
 const {logAction, logError} = require(path.resolve(__dirname, `utils.js`));
 
@@ -52,7 +52,7 @@ const apiRun = () => {
         mimeType: avatar.mimetype,
         filePath: avatar.path
       };
-      urlToAvatar = await gDrive.uploadAvatar(options);
+      urlToAvatar = await gDriveApi.uploadAvatar(options);
     } else {
       urlToAvatar = `${API_URL}/${Path.DEFAULT_AVATAR}`;
     }
@@ -90,7 +90,7 @@ const apiRun = () => {
           const options = {
             fileId: avatarId
           };
-          const isRemoved = await gDrive.removeAvatar(options);
+          const isRemoved = await gDriveApi.removeAvatar(options);
           logAction(`Аватар студента с id ${student.id}${!isRemoved ? ` НЕ` : ``} удален с Google Drive`);
         }
         res.send(student.id.toString());

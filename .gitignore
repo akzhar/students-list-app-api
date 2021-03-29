@@ -15,5 +15,5 @@ logs/
 # Env файл
 .env
 
-# Файлы для авторизации в google drive
-token.json
+# Файл содержащий токен для авторизации в google drive
+token.txt

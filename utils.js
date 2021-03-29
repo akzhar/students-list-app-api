@@ -6,7 +6,7 @@ const isProduction = process.env.NODE_ENV === `production`;
 
 const getTimeStamp = () => {
   const date = new Date();
-  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 };
 
 const getFileExtension = (file) => {
@@ -34,12 +34,4 @@ const logError = (error) => {
   log(message, Path.LOG_ERROR);
 };
 
-const readFile = (filename, encoding) => {
-  try {
-    return fs.readFileSync(filename, encoding);
-  } catch (_error) {
-    return null;
-  }
-};
-
-module.exports = {getTimeStamp, getFileExtension, logAction, logError, readFile};
+module.exports = {getTimeStamp, getFileExtension, logAction, logError};

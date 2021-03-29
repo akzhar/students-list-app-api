@@ -1,50 +1,30 @@
 const path = require(`path`);
+const isProduction = process.env.NODE_ENV === `production`;
+if (!isProduction) {
+  require(`dotenv`).config({path: path.resolve(__dirname, `.env`)});
+}
 const fs = require(`fs`);
-const readlineSync = require(`readline-sync`);
-const {logAction, logError, readFile} = require(path.resolve(__dirname, `utils.js`));
 const {google} = require(`googleapis`);
+const {HttpCode} = require(path.resolve(__dirname, `const.js`));
 
-const {HttpCode, Path} = require(path.resolve(__dirname, `const.js`));
-
-// If modifying these scopes, delete token.json
-const SCOPES = [`https://www.googleapis.com/auth/drive`];
-
-// Создает OAuth2, используя credentials из process.env, после чего выполняет переданный callback с параметрами options
-async function authorize(callback, options) {
+// Создает OAuth2, используя credentials из process.env
+// Возвращает OAuth2
+const getOAuth2Client = () => {
   const clientId = process.env.GDRIVE_CLIENT_ID;
   const clientSecret = process.env.GDRIVE_CLIENT_SECRET;
-  const redirectUri = `urn:ietf:wg:oauth:2.0:oob`;
-  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
-  let tokens = ``;
-  const tokensData = readFile(path.resolve(__dirname, Path.TOKEN), `utf8`);
-  if (tokensData) {
-    tokens = JSON.parse(tokensData).tokens;
-  } else {
-    const token = await getAccessToken(oAuth2Client);
-    tokens = token.tokens;
-  }
-  oAuth2Client.setCredentials(tokens);
+  const redirectUri = process.env.GDRIVE_REDIRECT_URI;
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+};
+
+// Передает OAuth2 токены авторизации, после чего выполняет переданный callback с параметрами options
+// Возвращает результат выполнения callback
+async function authorize(callback, options) {
+  const oAuth2Client = getOAuth2Client();
+  oAuth2Client.setCredentials({
+    "refresh_token": process.env.GDRIVE_REFRESH_TOKEN
+  });
   const result = await callback(oAuth2Client, options);
   return result;
-}
-
-// Получает и сохраняет новый токен после запроса на авторизацию пользователя
-// Возвращает новый токен
-async function getAccessToken(oAuth2Client) {
-  const authUrl = oAuth2Client.generateAuthUrl({
-    "access_type": `offline`,
-    "scope": SCOPES,
-  });
-  logAction(`Authorize this app by visiting this url: ${authUrl}`);
-  const code = readlineSync.question(`Enter the code from that page here: `);
-  const token = await oAuth2Client.getToken(code);
-  fs.writeFile(Path.TOKEN, JSON.stringify(token), (error) => {
-    if (error) {
-      logError(error);
-    }
-    logAction(`Token stored to ${Path.TOKEN}`);
-  });
-  return token;
 }
 
 // Загружает файл, описанный в media и metaData, на Google Drive, используя метод google.drive.create
@@ -69,14 +49,14 @@ async function uploadFile(authClient, options) {
   return res.data.id;
 }
 
-// Удаляет с Google Drive файл c указанным fileId, используя метод google.drive.delete
+// Удаляет файл c указанным fileId с Google Drive, используя метод google.drive.delete
 // Возвращает true, если файл был удален с Google Drive, false, если нет
 async function deleteFile(authClient, options) {
   const drive = google.drive({version: `v3`, auth: authClient});
   const response = await drive.files.delete({
     fileId: options.fileId
   });
-  return response.headers.status === HttpCode.NO_CONTENT;
+  return response.status === HttpCode.NO_CONTENT;
 }
 
 // Возвращает ссылку на сохраненный в Google Drive файл
@@ -96,6 +76,6 @@ async function removeAvatar(options) {
   return isRemoved;
 }
 
-const gDrive = {uploadAvatar, removeAvatar};
+const gDriveApi = {getOAuth2Client, uploadAvatar, removeAvatar};
 
-module.exports = gDrive;
+module.exports = gDriveApi;
