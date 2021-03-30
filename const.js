@@ -1,5 +1,4 @@
 const ID_PARAM_REGEXP = /(?<=&id=).+$/;
-const LINK_TO_MAIN_PAGE = `<a href="/">Вернуться на главную</a>`;
 const VALID_AVATAR_EXTENSIONS = [`png`, `jpg`, `jpeg`];
 const Path = {
   DEFAULT_AVATAR: `./default.svg`,
@@ -18,4 +17,4 @@ const HttpCode = {
   NO_CONTENT: 204
 };
 
-module.exports = {ID_PARAM_REGEXP, LINK_TO_MAIN_PAGE, VALID_AVATAR_EXTENSIONS, Path, DbTable, HttpCode};
+module.exports = {ID_PARAM_REGEXP, VALID_AVATAR_EXTENSIONS, Path, DbTable, HttpCode};

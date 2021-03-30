@@ -11,7 +11,7 @@ const database = require(path.resolve(__dirname, `database.js`));
 const upload = require(path.resolve(__dirname, `upload.js`));
 const gDriveApi = require(path.resolve(__dirname, `google-drive-api.js`));
 const {logAction, logError, getApiUrl, getPort} = require(path.resolve(__dirname, `utils.js`));
-const {ID_PARAM_REGEXP, LINK_TO_MAIN_PAGE, Path, HttpCode} = require(path.resolve(__dirname, `const.js`));
+const {ID_PARAM_REGEXP, Path, HttpCode} = require(path.resolve(__dirname, `const.js`));
 
 const port = getPort();
 const apiUrl = getApiUrl();
@@ -103,8 +103,8 @@ const apiRun = () => {
     const token = await database.getToken();
     if (token) {
       const msg = `Приложение уже авторизовано`;
-      logAction(`${msg} (в БД уже есть токен)`);
-      res.send(`${msg}<br><br>${LINK_TO_MAIN_PAGE}`);
+      logAction(`${msg} (в БД уже сохранен токен)`);
+      res.send(`${msg}<br><br><a href="/">Вернуться на главную</a>`);
     } else {
       const authUrl = gDriveApi.getAuthUrl();
       const folderUrl = gDriveApi.getGDriveFolderUrl(process.env.GDRIVE_FOLDER_ID);
@@ -112,22 +112,12 @@ const apiRun = () => {
       res.send(`Разрешите этому приложению использовать вашу <a href="${folderUrl}" target="_blank">папку Google Drive</a> в качестве хранилища для аватаров студентов...<br><br><a href="${authUrl}">Авторизовать приложение</a>`);
     }
   });
-  // Получает код авторизации от Google API, с помощью кода получает новый токен и сохраняет его в БД
+  // Получает код авторизации от Google API и обновляет токен
   api.get(`/oauth2callback`, async (req, res) => {
-    const {code: authorizationCode} = req.query;
-    const newTokens = await gDriveApi.getNewToken(authorizationCode);
-    const onSuccess = () => {
-      const msg = `Новый токен был успешно сохранен в БД`;
-      logAction(msg);
-      res.send(`${msg}<br><br>${LINK_TO_MAIN_PAGE}`);
-    };
-    const onFail = (error) => {
-      const errMsg = `Не удалось сохранить токен в базу данных`;
-      logError(`${errMsg}\n${error}`);
-      res.status(HttpCode.BAD_REQUEST).send(`${errMsg}<br><br>${error}<br><br>${LINK_TO_MAIN_PAGE}`);
-    };
     logAction(`GET /oauth2callback`);
-    database.saveToken(newTokens, onSuccess, onFail);
+    const {code: authorizationCode} = req.query;
+    gDriveApi.getNewToken(authorizationCode);
+    res.redirect(`/`);
   });
   api.listen(port);
   logAction(`API URL: ${apiUrl}`);
