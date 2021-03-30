@@ -1,8 +1,13 @@
 # Описание API
 
+## Авторизация в Google Drive
+
+Аватарки студентов приложение будет хранить в папке на Google Drive
+
+[Авторизовать приложение](/oauth2)
 ## Получение списка студентов
 
-[__GET__ /students](https://students-list-app-api.herokuapp.com/students)
+[__GET__ /students](/students)
 
 Коды ответов:
 

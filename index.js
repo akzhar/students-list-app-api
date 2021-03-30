@@ -6,44 +6,40 @@ if (!isProduction) {
 const fs = require(`fs`);
 const express = require(`express`);
 const cors = require(`cors`);
-const pgp = require(`pg-promise`)();
+const marked = require(`marked`);
+const database = require(path.resolve(__dirname, `database.js`));
 const upload = require(path.resolve(__dirname, `upload.js`));
 const gDriveApi = require(path.resolve(__dirname, `google-drive-api.js`));
-const marked = require(`marked`);
-const {logAction, logError} = require(path.resolve(__dirname, `utils.js`));
+const {logAction, logError, getApiUrl, getPort} = require(path.resolve(__dirname, `utils.js`));
+const {ID_PARAM_REGEXP, LINK_TO_MAIN_PAGE, Path, HttpCode} = require(path.resolve(__dirname, `const.js`));
 
-const HOST = process.env.HOST || `localhost`;
-const PORT = process.env.PORT || 3000;
-const TABLE = process.env.DB_TABLE_NAME;
-const API_URL = (isProduction) ? `https://${process.env.APP_NAME}.herokuapp.com` : `http://${HOST}:${PORT}`;
-const {ID_PARAM_REGEXP, Path, HttpCode} = require(path.resolve(__dirname, `const.js`));
-
+const port = getPort();
+const apiUrl = getApiUrl();
 const api = express();
-const db = pgp(process.env.DB_URL);
 
 const apiRun = () => {
   api.use(express.static(path.resolve(__dirname, `./`)));
   api.use(express.json());
   api.use(cors());
-  // возвращает описание API в md формате
+  // Возвращает описание API в формате markdown
   api.get(`/`, (_req, res) => {
     const md = fs.readFileSync(path.resolve(__dirname, Path.MD_API_DESCRIPTION), `utf8`);
     res.send(marked(md));
   });
-  // возвращает массив объектов студентов
+  // Возвращает массив объектов студентов в формате json
   api.get(`/students`, (_req, res) => {
-    db.query(`SELECT * FROM ${TABLE};`)
-    .then((students) => {
-      res.json(students);
-      logAction(`GET /students`);
-    })
-    .catch((error) => {
-      res.status(HttpCode.UNAVAILABLE).send(`База данных недоступна\n${error}`);
-    });
+    const onSuccess = (students) => res.json(students);
+    const onFail = (error) => {
+      const errMsg = `БД недоступна\n${error}`;
+      logError(errMsg);
+      res.status(HttpCode.UNAVAILABLE).send(errMsg);
+    };
+    logAction(`GET /students`);
+    database.getStudents(onSuccess, onFail);
   });
-  // возвращает объект нового студента, добавленного в БД (без валидации переданных данных)
+  // Возвращает объект нового студента, добавленного в БД, в формате json
   api.post(`/student`, upload.single(`avatar`), async (req, res) => {
-    const {file: avatar, body: student} = req;
+    const {file: avatar, body: studentData} = req;
     let urlToAvatar = ``;
     if (avatar) {
       const options = {
@@ -54,37 +50,29 @@ const apiRun = () => {
       };
       urlToAvatar = await gDriveApi.uploadAvatar(options);
     } else {
-      urlToAvatar = `${API_URL}/${Path.DEFAULT_AVATAR}`;
+      urlToAvatar = `${apiUrl}/${Path.DEFAULT_AVATAR}`;
     }
-    db.query(`INSERT INTO ${TABLE}
-      (name, email, rating, age, avatar, spec, "group", sex, favcolor)
-      VALUES ('${student.name}',
-      '${student.email}',
-      ${student.rating},
-      ${student.age},
-      '${urlToAvatar}',
-      '${student.spec}',
-      '${student.group}',
-      '${student.sex}',
-      '${student.favcolor}'
-      ) RETURNING *;`, student)
-    .then((students) => {
+    const student = {...studentData, avatar: urlToAvatar};
+    const onSuccess = (students) => {
+      logAction(`Студент добавлен в БД - (${students[0].name})`);
       res.json(students[0]);
-      logAction(`POST /student (${students[0].name})`);
-    })
-    .catch((error) => {
-      res.status(HttpCode.BAD_REQUEST).send(`Не удалось добавить студента\n${error}`);
-    });
+    };
+    const onFail = (error) => {
+      const errMsg = `Не удалось добавить студента в БД\n${error}`;
+      logError(errMsg);
+      res.status(HttpCode.BAD_REQUEST).send(errMsg);
+    };
+    logAction(`POST /student`);
+    database.postStudent(student, onSuccess, onFail);
   });
-  // возвращает id удаленного студента (или ошибку 404, если студента с таким id в БД нет)
+  // Возвращает id удаленного студента или ошибку 404, если студента с таким id в БД нет
   api.delete(`/student/:id`, (req, res) => {
-    const id = req.params.id;
-    db.query(`DELETE FROM ${TABLE} WHERE id = ${id} RETURNING id, avatar;`, id)
-    .then(async (students) => {
+    const {id: studentId} = req.params;
+    const onSuccess = async (students) => {
       const student = students[0];
       if (student) {
         const avatarUrl = student.avatar;
-        const isDefaultAvatar = avatarUrl.indexOf(API_URL) !== -1;
+        const isDefaultAvatar = avatarUrl.indexOf(apiUrl) !== -1;
         if (!isDefaultAvatar) {
           const avatarId = avatarUrl.match(ID_PARAM_REGEXP)[0];
           const options = {
@@ -93,21 +81,61 @@ const apiRun = () => {
           const isRemoved = await gDriveApi.removeAvatar(options);
           logAction(`Аватар студента с id ${student.id}${!isRemoved ? ` НЕ` : ``} удален с Google Drive`);
         }
+        logAction(`Студент с id ${student.id} удален из БД`);
         res.send(student.id.toString());
-        logAction(`DELETE /student/:${student.id}`);
       } else {
-        res.status(HttpCode.NOT_FOUND).send(`Студент с id ${id} не найден`);
+        const errMsg = `Студент с id ${studentId} не найден в БД`;
+        logError(errMsg);
+        res.status(HttpCode.NOT_FOUND).send(errMsg);
       }
-    })
-    .catch((error) => logError(error));
+    };
+    const onFail = (error) => {
+      const errMsg = `Не удалось удалить студента из БД\n${error}`;
+      logError(errMsg);
+      res.status(HttpCode.BAD_REQUEST).send(errMsg);
+    };
+    logAction(`DELETE /student/:${studentId}`);
+    database.deleteStudent(studentId, onSuccess, onFail);
   });
-  api.listen(PORT);
-  logAction(`API URL: ${API_URL}`);
+  // Проверяет наличие токена в БД, если токена нет, генерирует ссылку для запроса кода авторизации у Google API
+  api.get(`/oauth2`, async (_req, res) => {
+    logAction(`GET /oauth2`);
+    const token = await database.getToken();
+    if (token) {
+      const msg = `Приложение уже авторизовано`;
+      logAction(`${msg} (в БД уже есть токен)`);
+      res.send(`${msg}<br><br>${LINK_TO_MAIN_PAGE}`);
+    } else {
+      const authUrl = gDriveApi.getAuthUrl();
+      const folderUrl = gDriveApi.getGDriveFolderUrl(process.env.GDRIVE_FOLDER_ID);
+      logAction(`Запрос кода авторизации у Google API для получения нового токена`);
+      res.send(`Разрешите этому приложению использовать вашу <a href="${folderUrl}" target="_blank">папку Google Drive</a> в качестве хранилища для аватаров студентов...<br><br><a href="${authUrl}">Авторизовать приложение</a>`);
+    }
+  });
+  // Получает код авторизации от Google API, с помощью кода получает новый токен и сохраняет его в БД
+  api.get(`/oauth2callback`, async (req, res) => {
+    const {code: authorizationCode} = req.query;
+    const newTokens = await gDriveApi.getNewToken(authorizationCode);
+    const onSuccess = () => {
+      const msg = `Новый токен был успешно сохранен в БД`;
+      logAction(msg);
+      res.send(`${msg}<br><br>${LINK_TO_MAIN_PAGE}`);
+    };
+    const onFail = (error) => {
+      const errMsg = `Не удалось сохранить токен в базу данных`;
+      logError(`${errMsg}\n${error}`);
+      res.status(HttpCode.BAD_REQUEST).send(`${errMsg}<br><br>${error}<br><br>${LINK_TO_MAIN_PAGE}`);
+    };
+    logAction(`GET /oauth2callback`);
+    database.saveToken(newTokens, onSuccess, onFail);
+  });
+  api.listen(port);
+  logAction(`API URL: ${apiUrl}`);
 };
 
 process.on(`uncaughtException`, (error) => {
   logError(error);
-  throw new Error();
+  throw new Error(error);
 });
 
 apiRun();

@@ -34,4 +34,12 @@ const logError = (error) => {
   log(message, Path.LOG_ERROR);
 };
 
-module.exports = {getTimeStamp, getFileExtension, logAction, logError};
+const getHost = () => process.env.HOST || `localhost`;
+
+const getPort = () => process.env.PORT || 3000;
+
+const getApiUrl = () => {
+  return (isProduction) ? `https://${process.env.HEROKU_APP_NAME}.herokuapp.com` : `http://${getHost()}:${getPort()}`;
+};
+
+module.exports = {getTimeStamp, getFileExtension, logAction, logError, getPort, getApiUrl};
