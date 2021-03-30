@@ -20,9 +20,11 @@ const getOAuth2Client = () => {
   const redirectUri = `${getApiUrl()}/oauth2callback`;
   const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
   oAuth2Client.on(`tokens`, (newTokens) => {
-    const onSuccess = () => logAction(`'tokens' event: новый токен был успешно сохранен в БД`);
-    const onFail = (error) => logAction(`'tokens' event: не удалось сохранить токен в базу данных\n${error}`);
-    database.saveToken(newTokens, onSuccess, onFail);
+    if (newTokens[`refresh_token`]) {
+      const onSuccess = () => logAction(`'tokens' event: новый токен был успешно сохранен в БД`);
+      const onFail = (error) => logAction(`'tokens' event: не удалось сохранить токен в базу данных\n${error}`);
+      database.saveToken(newTokens, onSuccess, onFail);
+    }
   });
   return oAuth2Client;
 };
