@@ -103,7 +103,7 @@ const apiRun = () => {
     const token = await database.getToken();
     if (token) {
       const msg = `Приложение уже авторизовано`;
-      logAction(`${msg} (в БД уже сохранен токен)`);
+      logAction(`${msg} (в БД уже сохранен refresh_token)`);
       res.send(`${msg}<br><br><a href="/">Вернуться на главную</a>`);
     } else {
       const authUrl = gDriveApi.getAuthUrl();

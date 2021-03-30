@@ -45,22 +45,20 @@ const deleteStudent = (studentId, onSuccess, onFail) => {
   .catch((error) => onFail(error));
 };
 
-// Возвращает последний сохраненный токен в таблице DbTable.TOKENS или null, если токенов нет
+// Возвращает последний сохраненный refresh_token в таблице DbTable.TOKENS или null, если токенов нет
 const getToken = async () => {
   const tokens = await db.query(`SELECT * FROM ${DbTable.TOKENS} ORDER BY id DESC LIMIT 1;`);
   const hasToken = tokens.length !== 0;
-  return (hasToken) ? tokens[0] : null;
+  return (hasToken) ? tokens[0][`refresh_token`] : null;
 };
 
-// Сохраняет токен в таблицу DbTable.TOKENS
+// Сохраняет refresh_token в таблицу DbTable.TOKENS
 const saveToken = (newTokens, onSuccess, onFail) => {
   db.query(`INSERT INTO ${DbTable.TOKENS} (
   creation_date,
-  access_token,
   refresh_token
   ) VALUES (
   CURRENT_TIMESTAMP,
-  '${newTokens[`access_token`]}',
   '${newTokens[`refresh_token`]}'
   );`, newTokens)
   .then(() => onSuccess())
