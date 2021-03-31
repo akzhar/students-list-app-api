@@ -43,7 +43,7 @@ const getAuthUrl = () => {
   return oAuth2Client.generateAuthUrl({
     "access_type": `offline`,
     "scope": [GOOGLE_DRIVE_SCOPE],
-    "approval_prompt": `force`
+    "prompt": `consent`
   });
 };
 
