@@ -7,25 +7,32 @@ API URL: https://students-list-app-api.herokuapp.com
 <a id="up"></a>
 
 ## Содержание
-- [1. Деплой API](#1)
-	- [1.1 Создаем базу данных PostgreSQL](#1.1)
-  - [1.2 Делаем форк и клонируем проект себе на ПК](#1.2)
-  - [1.3 Создаем хранилище для фото на Google Drive](#1.3)
-  - [1.4 Разворачиваем API на Heroku](#1.4)
-- [2. Команды для работы с API из консоли в локальном репозитории](#2)
-- [3. Тестирование API](#3)
-- [4. Засыпание приложения на Heroku](#4)
-	- [4.1 Проблема](#4.1)
-	- [4.2 Устраняем проблему](#4.2)
-	- [4.3 Проверяем результат](#4.3)
+- [1. Описание API](#1)
+- [2. Деплой API](#2)
+	- [2.1 Создаем базу данных PostgreSQL](#2.1)
+  - [2.2 Делаем форк и клонируем проект себе на ПК](#2.2)
+  - [2.3 Создаем хранилище для фото на Google Drive](#2.3)
+  - [2.4 Разворачиваем API на Heroku](#2.4)
+- [3. Команды для работы с API из консоли в локальном репозитории](#3)
+- [4. Тестирование API](#4)
+- [5. Засыпание приложения на Heroku](#5)
+	- [5.1 Проблема](#5.1)
+	- [5.2 Устраняем проблему](#5.2)
+	- [5.3 Проверяем результат](#5.3)
 
 <a id="1"></a>
 
-## <a href="#up">↑</a> 1. Деплой API
+## <a href="#up">↑</a> 1. Описание API
 
-<a id="1.1"></a>
+Описание API см. в файле [API.md](https://github.com/akzhar/students-list-app-api/blob/main/API.md). Оно также есть на [главной странице](https://students-list-app-api.herokuapp.com)
 
-### <a href="#up">↑</a> 1.1 Создаем базу данных PostgreSQL
+<a id="2"></a>
+
+## <a href="#up">↑</a> 2. Деплой API
+
+<a id="2.1"></a>
+
+### <a href="#up">↑</a> 2.1 Создаем базу данных PostgreSQL
 
 Для хранения информации о студентах будем использовать облачную базу данных PostgreSQL - ElephantSQL
 
@@ -80,18 +87,18 @@ API URL: https://students-list-app-api.herokuapp.com
 11. На вкладке `General` указываем любое и переходим на вкладку `Connection`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/8.png)
+  
+12. На вкладке `Connection` указываем данные, полученные на 8-ом шаге
 
-12.  На вкладке `Connection` указываем данные, полученные на 8-ом шаге
+	- `Hostaname / address`
 
-  - `Host name / address`
+	- `Maintenance database`
+
+	- `Username`
+
+	- `Password`
   
-  - `Maintenace database`
-  
-  - `Username`
-  
-  - `Password`
-  
-  ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/9.png)
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/9.png)
 
 13. Нажимаем `Connect` и, подключившись, находим наш инстанс в списке (Ctrl + F → `Database name`)
 
@@ -136,27 +143,27 @@ API URL: https://students-list-app-api.herokuapp.com
 	);
 	```
 
-<a id="1.2"></a>
+<a id="2.2"></a>
 
-### <a href="#up">↑</a> 1.2 Делаем форк и клонируем проект себе на ПК
+### <a href="#up">↑</a> 2.2 Делаем форк и клонируем проект себе на ПК
 
-1. Делаем форк данного репозитория и клонируем проект к себе на ПК: `git clone git@github.com:<ваш аккаунт на Github>/students-list-app-api.git`
+1. Делаем форк данного репозитория и клонируем проект к себе на ПК командой: `git clone git@github.com:<ваш Github аккаунт>/students-list-app-api.git`
 
 2. Переходим в директорию проекта у себя на ПК, создаем в корне файл `.env` следующего содержания:
 
   ```
-    DB_URL=<URL для доступа к БД из 8-го шага в п. 1.1>
-    GDRIVE_FOLDER_ID=<ID папки на Google Drive из 2-го шага в п. 1.3>
-    GDRIVE_CLIENT_ID=<OAuth 2.0 Client ID из 11-го шага в п. 1.3>
-    GDRIVE_CLIENT_SECRET=<OAuth 2.0 Client Secret из 11-го шага в п. 1.3>
+    DB_URL=<URL для доступа к БД из 8-го шага в п. 2.1>
+    GDRIVE_FOLDER_ID=<ID папки на Google Drive из 2-го шага в п. 2.3>
+    GDRIVE_CLIENT_ID=<OAuth 2.0 Client ID из 11-го шага в п. 2.3>
+    GDRIVE_CLIENT_SECRET=<OAuth 2.0 Client Secret из 11-го шага в п. 2.3>
     NODE_ENV=development // значение переменной при деплое будет заменено Heroku на 'production'
   ```
 
-<a id="1.3"></a>
+<a id="2.3"></a>
 
-### <a href="#up">↑</a> 1.3 Создаем хранилище для фото на Google Drive
+### <a href="#up">↑</a> 2.3 Создаем хранилище для фото на Google Drive
 
-Хранить загружаемые файлы (аватарки студентов) на платформе Heroku (на нее мы задеплоим проект в п. 1.4) к сожалению [не получится](https://help.heroku.com/K1PPS2WM/why-are-my-file-uploads-missing-deleted), поэтому нам понадобится отдельное хранилище для файлов - Google Drive
+Хранить загружаемые файлы (аватарки студентов) на платформе Heroku (на нее мы задеплоим проект в п. 2.4) к сожалению [не получится](https://help.heroku.com/K1PPS2WM/why-are-my-file-uploads-missing-deleted), поэтому нам понадобится отдельное хранилище для файлов - Google Drive
 
 1. Создаем [Google аккаунт](https://accounts.google.com) и заводим [Google Drive](https://drive.google.com)
 
@@ -184,7 +191,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 7. В разделе Test users нажимаем `Add users` → вводим свой емейл → нажимаем `Add` → нажимаем `Save and continue`
 
-  ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/39.png)
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/39.png)
 
 8. Переходим в раздел `Credentials` → нажимаем `Create credentials` → `Create OAuth client ID`
 
@@ -203,9 +210,9 @@ API URL: https://students-list-app-api.herokuapp.com
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/43.png)
 
 
-<a id="1.4"></a>
+<a id="2.4"></a>
 
-### <a href="#up">↑</a> 1.4 Разворачиваем API на Heroku
+### <a href="#up">↑</a> 2.4 Разворачиваем API на Heroku
 
 1. Регистрируемся на [heroku.com](https://www.heroku.com) → `Create free account`
 
@@ -251,7 +258,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/44.png)
 
-11. Откройте логи Heroku приложения: сделать это можно, нажав на `More` → `View logs` ИЛИ в консоли командой `npm run logs`
+11. Откройте логи Heroku приложения: сделать это можно, нажав на `More` → `View logs` или в консоли командой `npm run logs`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/22.png)
 
@@ -283,9 +290,9 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/47.png)
 
-<a id="2"></a>
+<a id="3"></a>
 
-## <a href="#up">↑</a> 2. Команды для работы с API из консоли в локальном репозитории
+## <a href="#up">↑</a> 3. Команды для работы с API из консоли в локальном репозитории
 
 - `npm run deploy` - быстрый деплой всех изменений в ваш Github репозиторий в ветку `main`, имя коммита `heroku deploy`. Heroku автоматически соберет и запустит новую версию приложения. Если необходимо дать нормальное имя коммиту необходимо заменить команду `npm run deploy` на 3 последовательные команды `git add .`,  `git commit -m "<commit name>"`,  `git push origin main`.
 PS: все изменения лучше делать в отдельной ветке, тестировать локально (для запуска API локально есть скрипт `npm run dev`) и затем вливать проверенные изменения в ветку `main` таким образом совершая deploy на Heroku.
@@ -296,9 +303,9 @@ PS: все изменения лучше делать в отдельной ве
 
 - `npm run app-on` - запуск приложения на Heroku
 
-<a id="3"></a>
+<a id="4"></a>
 
-## <a href="#up">↑</a> 3. Тестирование API
+## <a href="#up">↑</a> 4. Тестирование API
  
 Протестировать API можно с помощью [insomnia.rest](https://insomnia.rest/download)
 
@@ -314,15 +321,15 @@ __DELETE__ /student/:id
 
 ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/29.png)
 
-<a id="4"></a>
+<a id="5"></a>
 
-## <a href="#up">↑</a> 4. Засыпание приложения на Heroku
+## <a href="#up">↑</a> 5. Засыпание приложения на Heroku
 
 Есть отличная [статья на javarush.ru](https://javarush.ru/groups/posts/1987-malenjhkie-khitrosti-s-heroku), которая описывает проблему и пути ее решения.
 
-<a id="4.1"></a>
+<a id="5.1"></a>
 
-### <a href="#up">↑</a> 4.1 Проблема
+### <a href="#up">↑</a> 5.1 Проблема
 
 1. При регистрации бесплатного Heroku аккаунта вам дается 550 [free dyno hours](https://devcenter.heroku.com/articles/free-dyno-hours) в месяц. По сути это часы активности вашего приложения.
 
@@ -330,9 +337,9 @@ __DELETE__ /student/:id
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/30.png)
 
-<a id="4.2"></a>
+<a id="5.2"></a>
 
-### <a href="#up">↑</a> 4.2 Устраняем проблему
+### <a href="#up">↑</a> 5.2 Устраняем проблему
 
 1. Чтобы увеличить кол-во `free dyno hours` - в настройках аккаунта на Heroku (`Account settings` → `Billing`) нужно привязать банковскую карту
 
@@ -340,9 +347,9 @@ __DELETE__ /student/:id
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/31.png)
 
-<a id="4.3"></a>
+<a id="5.3"></a>
 
-### <a href="#up">↑</a> 4.3 Проверяем результат
+### <a href="#up">↑</a> 5.3 Проверяем результат
 
 - Открываем логи и убеждаемся, что приложение Kaffeine "разбудило" наше приложение
 
