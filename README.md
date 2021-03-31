@@ -83,13 +83,13 @@ API URL: https://students-list-app-api.herokuapp.com
 
 12.  На вкладке `Connection` указываем данные, полученные на 8-ом шаге
 
-	- `Host name / address`
-
-	- `Maintenace database`
-
-	- `Username`
-
-	- `Password`
+  - `Host name / address`
+  
+  - `Maintenace database`
+  
+  - `Username`
+  
+  - `Password`
   
   ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/9.png)
 
@@ -145,11 +145,11 @@ API URL: https://students-list-app-api.herokuapp.com
 2. Переходим в директорию проекта у себя на ПК, создаем в корне файл `.env` следующего содержания:
 
   ```
-	DB_URL=<URL для доступа к БД из 8-го шага в п. 1.1>
-  GDRIVE_FOLDER_ID=<ID папки на Google Drive из 2-го шага в п. 1.3>
-  GDRIVE_CLIENT_ID=<OAuth 2.0 Client ID из 11-го шага в п. 1.3>
-  GDRIVE_CLIENT_SECRET=<OAuth 2.0 Client Secret из 11-го шага в п. 1.3>
-	NODE_ENV=development // значение переменной будет автоматически заменено Heroku на 'production'
+    DB_URL=<URL для доступа к БД из 8-го шага в п. 1.1>
+    GDRIVE_FOLDER_ID=<ID папки на Google Drive из 2-го шага в п. 1.3>
+    GDRIVE_CLIENT_ID=<OAuth 2.0 Client ID из 11-го шага в п. 1.3>
+    GDRIVE_CLIENT_SECRET=<OAuth 2.0 Client Secret из 11-го шага в п. 1.3>
+    NODE_ENV=development // значение переменной при деплое будет заменено Heroku на 'production'
   ```
 
 <a id="1.3"></a>
@@ -267,7 +267,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/25.png)
 
-15. Смотрим логи нашего приложения (см. шаг 11) и убеждаемся, что наше API запущено по адресу `https://<имя приложения на Heroku>.herokuapp.com`
+15. Смотрим логи нашего приложения и убеждаемся, что наше API запущено по адресу `https://<имя приложения на Heroku>.herokuapp.com`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/26.png)
 
@@ -275,7 +275,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/45.png)
 
-17. Смотрим логи нашего приложения (см. шаг 11) и убеждаемся, что в логах появилось сообщение о том, что токен от Google Drive сохранен в БД
+17. Смотрим логи нашего приложения и убеждаемся, что в логах появилось сообщение о том, что токен от Google Drive сохранен в БД
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/46.png)
 
