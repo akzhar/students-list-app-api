@@ -9,7 +9,9 @@ API URL: https://students-list-app-api.herokuapp.com
 ## Содержание
 - [1. Деплой API](#1)
 	- [1.1 Создаем базу данных PostgreSQL](#1.1)
-	- [1.2 Разворачиваем API на Heroku](#1.2)
+  - [1.2 Делаем форк и клонируем проект себе на ПК](#1.2)
+  - [1.3 Создаем хранилище для фото на Google Drive](#1.3)
+	- [1.4 Разворачиваем API на Heroku](#1.4)
 - [2. Команды для работы с API из консоли в локальном репозитории](#2)
 - [3. Тестирование API](#3)
 - [4. Засыпание приложения на Heroku](#4)
@@ -24,6 +26,8 @@ API URL: https://students-list-app-api.herokuapp.com
 <a id="1.1"></a>
 
 ### <a href="#up">↑</a> 1.1 Создаем базу данных PostgreSQL
+
+Для хранения информации о студентах будем использовать облачную базу данных PostgreSQL - ElephantSQL
 
 1. Регистрируемся на [elephantsql.com](https://www.elephantsql.com)
 
@@ -55,7 +59,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/5.png)
 
-8. Копируем
+8. Записываем / запоминаем
 
 	- `Server (address)`
 
@@ -77,7 +81,7 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/8.png)
 
-12.  На вкладке `Connection` указываем данные, полученные на 8-ом шаге:
+12.  На вкладке `Connection` указываем данные, полученные на 8-ом шаге
 
 	- `Host name / address`
 	
@@ -121,81 +125,162 @@ API URL: https://students-list-app-api.herokuapp.com
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/13.png)
 
+17. Аналогично таблице `students` создаем вторую таблицу `google_drive_tokens` для хранения токена авторизации в Google Drive
+
+	```
+	CREATE TABLE google_drive_tokens(
+		id SERIAL,
+		creation_date timestamp with time zone NOT NULL,
+		refresh_token text UNIQUE NOT NULL,
+		PRIMARY KEY(id)
+	);
+	```
+
 <a id="1.2"></a>
 
-### <a href="#up">↑</a> 1.2 Разворачиваем API на Heroku
+### <a href="#up">↑</a> 1.2 Делаем форк и клонируем проект себе на ПК
 
 1. Делаем форк данного репозитория и клонируем проект к себе на ПК: `git clone git@github.com:<ваш аккаунт на Github>/students-list-app-api.git`
 
 2. Переходим в директорию проекта у себя на ПК, создаем в корне файл `.env` следующего содержания:
 	```
-	DB_URL=<URL из 8-го шага>
-	DB_TABLE_NAME=students
-	APP_NAME=<имя приложения на Heroku> - понадобится на 5-ом шаге
-	NODE_ENV=development
+	DB_URL=<URL для доступа к БД из 8-го шага в п. 1.1>
+  GDRIVE_FOLDER_ID=<ID папки на Google Drive из 2-го шага в п. 1.3>
+  GDRIVE_CLIENT_ID=<OAuth 2.0 Client ID из 11-го шага в п. 1.3>
+  GDRIVE_CLIENT_SECRET=<OAuth 2.0 Client Secret из 11-го шага в п. 1.3>
+	NODE_ENV=development // значение переменной будет автоматически заменено Heroku на 'production'
 	```
 
-3. Регистрируемся на [heroku.com](https://www.heroku.com) → `Create free account`
+<a id="1.3"></a>
 
-4. После регистрации нажимаем кнопку `New` → `Creat new app`
+### <a href="#up">↑</a> 1.3 Создаем хранилище для фото на Google Drive
+
+Хранить загружаемые файлы (аватарки студентов) на платформе Heroku (на нее мы задеплоим проект в п. 1.4) к сожалению [не получится](https://help.heroku.com/K1PPS2WM/why-are-my-file-uploads-missing-deleted), поэтому нам понадобится отдельное хранилище для файлов - Google Drive
+
+1. Создаем [Google аккаунт](https://accounts.google.com) и заводим [Google Drive](https://drive.google.com)
+
+2. Создаем на Google Drive папку для хранения аватаров студентов и помещаем ID папки из адресной строки в переменную `GDRIVE_FOLDER_ID` в `.env` файле в корне локального репозитория
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/33.png)
+
+3. Переходим в [Google API console](https://console.developers.google.com/?hl=ru) и создаем новый проект: указываем имя проекта (любое) → нажимаем `Create`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/34.png)
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/35.png)
+
+4. Переходим в раздел `OAuth consent screen` → выбираем User Type `External` → нажимаем `Create`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/36.png)
+
+5. Заполняем обязательные поля: `App name`, `User support email`, `Developer contact information - email` → нажимаем `Save and continue`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/37.png)
+
+6. Нажимаем `Add or remove scopes` → выбираем значение `https://www.googleapis.com/auth/drive` в списке Scopes → нажимаем `Update` → нажимаем `Save and continue`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/38.png)
+
+7. В разделе Test users нажимаем `Add users` → вводим свой емейл → нажимаем `Add` → нажимаем `Save and continue`
+
+  ![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/39.png)
+
+8. Переходим в раздел `Credentials` → нажимаем `Create credentials` → `Create OAuth client ID`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/40.png)
+
+9. Выбираем Application type `Web application`, даем любое имя для OAuth client
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/41.png)
+
+10. Cпускаемся ниже и в разделе __Authorized JavaScript origins__ указываем адрес вашего приложения, а в разделе __Authorized redirect URIs__ добавляем к нему путь `/oauth2callback` → нажимаем `Create`
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/42.png)
+
+11. Копируем `Client ID` и `Client Secret` в `.env` файл в корне локального репозитория в переменные `GDRIVE_CLIENT_ID` и `GDRIVE_CLIENT_SECRET` соответственно
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/43.png)
+
+
+<a id="1.4"></a>
+
+### <a href="#up">↑</a> 1.4 Разворачиваем API на Heroku
+
+1. Регистрируемся на [heroku.com](https://www.heroku.com) → `Create free account`
+
+2. После регистрации нажимаем кнопку `New` → `Creat new app`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/14.png)
 
-5. Даем приложению имя как в `APP_NAME` из 2-го шага
+3. Даем приложению имя
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/15.png)
 
-6. Устанавливаем [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli), в консоли переходим в директорию проекта `cd <имя приложения>/` и выполняем команды:
+4. Устанавливаем [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli), в консоли переходим в директорию проекта `cd <имя приложения>/` и выполняем команды:
 
 	- `heroku login` (откроет окно а браузере, в котором нужно будет подтвердить авторизацию)
 
 	- подтверждаем авторизацию в браузере и возвращаемся в консоль
 
-	- `heroku git:remote -a <имя приложения на Heroku>` - значение `APP_NAME` из 2-го шага
+	- `heroku git:remote -a <имя приложения на Heroku>`
 
-7. Возвращаемся на [dashboard.heroku.com/apps](https://dashboard.heroku.com/apps) и открываем наше приложение
+5. Возвращаемся на [dashboard.heroku.com/apps](https://dashboard.heroku.com/apps) и открываем наше приложение
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/16.png)
 
-8. Вкладка `Deploy` → выбираем деплой через Github → авторизуемся в Github, выбираем репозиторий с форком
+6. Вкладка `Deploy` → выбираем деплой через Github → авторизуемся в Github, выбираем репозиторий с форком
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/17.png)
 
-9. Включаем опцию `Enable Automatic Deploys`
+7. Включаем опцию `Enable Automatic Deploys`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/18.png)
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/19.png)
 
-10. Переходим на вкладку `Settings` → выбираем пункт `Reveal Config Vars`
+8. Переходим на вкладку `Settings` → выбираем пункт `Reveal Config Vars`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/20.png)
 
-11. Добавляем `env` константы из 2-го шага (все кроме `NODE_ENV`)
+9. Добавляем `env` константы из 2-го шага (все кроме `NODE_ENV`). В консоли выполните команду `heroku labs:enable runtime-dyno-metadata -a <имя приложения на Heroku>`. Это добавит ряд системных env переменных, содержащих [метаданные Heroku окружения](https://devcenter.heroku.com/articles/dyno-metadata). В коде нашего приложения будет использована переменная `HEROKU_APP_NAME`.
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/21.png)
 
-12. Откройте логи Heroku приложения: сделать это можно, нажав на `More` → `View logs` ИЛИ в консоли командой `npm run logs`
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/44.png)
+
+10. Откройте логи Heroku приложения: сделать это можно, нажав на `More` → `View logs` ИЛИ в консоли командой `npm run logs`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/22.png)
 
-13. Убедитесь, что в логах значится код ошибки `H81 Blank-app` В [документации Heroku](https://devcenter.heroku.com/articles/error-codes#h81-blank-app) сказано, что этот код не является ошибкой и означает, что ни одного деплоя кода нашего приложения в git репозиторий Heroku еще не было выполнено
+11. Убедитесь, что в логах значится код ошибки `H81 Blank-app` В [документации Heroku](https://devcenter.heroku.com/articles/error-codes#h81-blank-app) сказано, что этот код не является ошибкой и означает, что ни одного деплоя кода нашего приложения в git репозиторий Heroku еще не было выполнено
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/23.png)
 	
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/24.png)
 
-14. Чтобы это исправить, нам надо сделать хотя бы один коммит и пуш в git репозиторий Heroku (в нашем случае Heroku будет брать обновления из ветки `main` в нашем репозитории на Github, поэтому пушить изменения нужно туда). Измените какой-либо файл в репозитории, например, измените заголовок в файле `README.md`.
+12. Чтобы это исправить, нам надо сделать хотя бы один коммит и пуш в git репозиторий Heroku (в нашем случае Heroku будет брать обновления из ветки `main` в нашем репозитории на Github, поэтому пушить изменения нужно туда). Измените какой-либо файл в репозитории, например, измените заголовок в файле `README.md`.
 
-15. Теперь перейдите в консоль и выполните команду `npm run deploy`
+13. Теперь перейдите в консоль и выполните команду `npm run deploy`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/25.png)
 
-16. Смотрим логи нашего приложения (см. шаг 12) и убеждаемся, что наше API запущено по адресу `https://<имя приложения на Heroku>.herokuapp.com`
+14. Смотрим логи нашего приложения (см. шаг 10) и убеждаемся, что наше API запущено по адресу `https://<имя приложения на Heroku>.herokuapp.com`
 
 	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/26.png)
 
-	<a id="2"></a>
+15. Переходим по адресу запущенного API `https://<имя приложения на Heroku>.herokuapp.com` и выполняем авторизацию нашего приложения в Google Drive
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/45.png)
+
+16. Смотрим логи нашего приложения (см. шаг 10) и убеждаемся, что в логах появилось сообщение о том, что токен сохранен в БД
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/46.png)
+
+16. Возвращаемся в БД и проверяем, что в действительно токен появился в таблице `google_drive_tokens` (см. шаг 16 в п. 1.1)
+
+	![step visualization](https://raw.githubusercontent.com/akzhar/readme-demos-media/main/students-list-app/api/46.png)
+
+<a id="2"></a>
 
 ## <a href="#up">↑</a> 2. Команды для работы с API из консоли в локальном репозитории
 
